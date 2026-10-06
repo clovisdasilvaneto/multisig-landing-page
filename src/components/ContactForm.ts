@@ -1,15 +1,51 @@
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { BRAND } from "../config";
-import { img, qs } from "../lib/env";
+import { asset, env, img, qs } from "../lib/env";
 
 /** Set to a real endpoint (Formspree, your API, …) to receive requests. */
 const ENDPOINT = "";
+
+const MASCOT_ALT = `The ${BRAND} mascot standing in a glowing multi-sig network`;
+
+/** Scroll-scrubbed 1 s clip of the finale; the still alone under reduced motion. */
+function mascot() {
+  if (env.reducedMotion) return `<img class="contact__mascot" src="${img("stills/finale")}" alt="${MASCOT_ALT}" loading="lazy" decoding="async" width="660" height="880">`;
+  return `<video class="contact__mascot" poster="${img("stills/finale")}" aria-label="${MASCOT_ALT}" muted playsinline disablepictureinpicture preload="none" width="660" height="880"></video>`;
+}
+
+/** Scrubs the clip by scroll, then fades it out. */
+function initMascot() {
+  const video = document.querySelector<HTMLVideoElement>("video.contact__mascot");
+  if (!video) return;
+  // load as a blob so every seek is local (no range requests mid-scrub)
+  fetch(asset("stills/finale_clip.mp4"))
+    .then((r) => r.blob())
+    .then((b) => { video.src = URL.createObjectURL(b); })
+    .catch(() => undefined);
+
+  // plays while the section scrolls in, ending as the form lands; fades on the way to the footer
+  ScrollTrigger.create({
+    trigger: "#contact",
+    start: "top bottom",
+    end: "top top",
+    onUpdate: ({ progress }) => {
+      if (video.readyState >= 1 && video.duration) video.currentTime = progress * (video.duration - 0.001);
+    },
+  });
+  gsap.to(video, {
+    autoAlpha: 0,
+    ease: "none",
+    scrollTrigger: { trigger: "#contact", start: "top top", end: "max", scrub: true },
+  });
+}
 
 export function ContactForm() {
   const date = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
   return `
 <section class="section contact" id="contact" aria-labelledby="contact-title">
   <div class="wipe" aria-hidden="true"></div>
-  <img class="contact__mascot" src="${img("stills/finale")}" alt="The ${BRAND} mascot standing in a glowing multi-sig network" loading="lazy" decoding="async" width="660" height="880">
+  ${mascot()}
   <div class="contact__col">
     <p class="eyebrow mono"><span class="mono-n">04</span> / Contact</p>
     <h2 class="display display--lg reveal" id="contact-title">Your keys. Your call.</h2>
@@ -100,6 +136,7 @@ async function hash(text: string) {
 }
 
 export function initContact() {
+  if (!env.reducedMotion) initMascot();
   const form = qs<HTMLFormElement>(".receipt");
   const sig = initSignature(qs<HTMLCanvasElement>(".sig__pad", form));
   const err = qs(".receipt__error", form);

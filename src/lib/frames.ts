@@ -1,5 +1,5 @@
 import { FRAME_COUNT } from "../config";
-import { asset, env, supportsWebp } from "./env";
+import { asset, env } from "./env";
 
 /**
  * Progressive image-sequence loader.
@@ -32,8 +32,7 @@ export class FrameStore {
 
   url(i: number) {
     const set = env.mobile ? "mobile" : "desktop";
-    const ext = supportsWebp() ? "webp" : "jpg";
-    return asset(`frames/${set}/f_${String(i + 1).padStart(4, "0")}.${ext}`);
+    return asset(`frames/${set}/f_${String(i + 1).padStart(4, "0")}.webp`);
   }
 
   onProgress(fn: (p: number) => void) {

@@ -8,14 +8,15 @@ GSAP/ScrollTrigger, Lenis. No framework runtime.
 
 ```bash
 npm install
-npm run frames      # only needed if you change the video (needs ffmpeg with libwebp)
+npm run frames      # only needed if you change the video (needs ffmpeg, cwebp, realesrgan-ncnn-vulkan)
 npm run dev         # http://localhost:5173
 npm run build       # → dist/
 npm run build:single  # → dist-single/lockstep.html, one self-contained file (preview/sharing)
 ```
 
-The zip ships with the WebP frame sets. `npm run frames` regenerates everything,
-including the JPG fallbacks used by browsers without WebP.
+The repo ships with the WebP frame sets. `npm run frames` regenerates everything:
+the 832px source is AI-upscaled 4× with Real-ESRGAN (`realesr-animevideov3`), then
+downscaled and encoded with `cwebp`. Point `REALESRGAN` at the binary if it isn't on PATH.
 
 ## Change the brand
 
@@ -38,10 +39,11 @@ JSON `{ name, email, what }`).
 
 `scripts/extract-frames.sh` produces:
 
-- `public/frames/desktop/f_0001…0145.{webp,jpg}` at 1920w (lanczos + light unsharp)
-- `public/frames/mobile/f_0001…0145.{webp,jpg}` at 960w
-- `public/stills/*.{webp,jpg}`: 3:4 portrait crops around the mascot for cards,
-  protocol and contact; `key_18/70/132` wide frames for reduced motion
+- `public/frames/desktop/f_0001…0145.webp` at 1920w (Real-ESRGAN 4× → lanczos, q55)
+- `public/frames/mobile/f_0001…0145.webp` at 960w (q55)
+- `public/stills/*.webp`: 3:4 portrait crops around the mascot for cards,
+  protocol and contact; `finale_clip.mp4`, frames 120–144 (all keyframes) scrubbed
+  by scroll behind the contact form; `key_18/70/132` wide frames for reduced motion
 
 To swap the video, drop it in `assets/`, run `npm run frames`, update
 `FRAME_COUNT` if it changed, and retune `CHAPTERS`, `FIRE`, `SIGNER_FRAMES` and

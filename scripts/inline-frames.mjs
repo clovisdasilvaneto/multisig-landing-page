@@ -20,14 +20,13 @@ const uri = (buf, mime) => `data:${mime};base64,${buf.toString("base64")}`;
 
 for (const f of readdirSync(TMP).sort()) {
   const data = uri(readFileSync(join(TMP, f)), "image/webp");
-  for (const set of ["desktop", "mobile"])
-    for (const ext of ["webp", "jpg"]) assets[`frames/${set}/${f.replace(".webp", "." + ext)}`] = data;
+  for (const set of ["desktop", "mobile"]) assets[`frames/${set}/${f}`] = data;
 }
+const MIME = { ".webp": "image/webp", ".mp4": "video/mp4" };
 for (const f of readdirSync("public/stills")) {
-  if (!f.endsWith(".webp")) continue;
-  const data = uri(readFileSync(join("public/stills", f)), "image/webp");
-  assets[`stills/${f}`] = data;
-  assets[`stills/${f.replace(".webp", ".jpg")}`] = data;
+  const mime = MIME[f.slice(f.lastIndexOf("."))];
+  if (!mime) continue;
+  assets[`stills/${f}`] = uri(readFileSync(join("public/stills", f)), mime);
 }
 
 // dedupe: store each data URI once, map keys to an index

@@ -20,22 +20,9 @@ export function asset(path: string): string {
   return window.__ASSETS__?.[key] ?? `${import.meta.env.BASE_URL}${key}`;
 }
 
-/** <picture>-free helper: prefer webp, fall back to jpg. */
-let webpOk: boolean | null = null;
-export function supportsWebp(): boolean {
-  if (webpOk !== null) return webpOk;
-  try {
-    const c = document.createElement("canvas");
-    c.width = c.height = 1;
-    webpOk = c.toDataURL("image/webp").startsWith("data:image/webp");
-  } catch {
-    webpOk = false;
-  }
-  return webpOk;
-}
-
+/** Stills ship as webp only (supported by every browser we target). */
 export function img(pathNoExt: string): string {
-  return asset(`${pathNoExt}.${supportsWebp() ? "webp" : "jpg"}`);
+  return asset(`${pathNoExt}.webp`);
 }
 
 export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
